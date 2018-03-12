@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Barna001/go-auth/database"
+	"github.com/Barna001/go-auth/http"
 	"github.com/Barna001/go-auth/user"
 )
 
@@ -16,4 +17,6 @@ func main() {
 		fmt.Println(err)
 	}
 	fmt.Println(user)
+	webServer := http.Server{Port: 8080, Db: db}
+	webServer.StartServer()
 }

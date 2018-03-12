@@ -6,5 +6,14 @@ type NoUserError struct {
 }
 
 func (e NoUserError) Error() string {
-	return "No user found " + e.s
+	return "No user found"
+}
+
+// AlreadyAddedError when trying to add
+type AlreadyAddedError struct {
+	s string
+}
+
+func (e AlreadyAddedError) Error() string {
+	return "User already added"
 }

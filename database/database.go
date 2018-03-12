@@ -10,8 +10,8 @@ import (
 
 // Database includes getting a user by email and adding a new user
 type Database interface {
-	GetUser(string) user.User
-	AddUser(user.User)
+	GetUser(string) (user.User, error)
+	AddUser(user.User) error
 }
 
 // TextDB is one implementation of Database, stores in plain text, in the given path
@@ -35,10 +35,10 @@ func (db TextDB) GetUser(email string) (user.User, error) {
 }
 
 // AddUser adds a new user to the db
-func (db TextDB) AddUser(user user.User) {
+func (db TextDB) AddUser(user user.User) error {
 	_, err := db.GetUser(user.Email)
 	if err == nil {
-		return
+		return errors.AlreadyAddedError{}
 	}
 	serialzedUser := []byte(user.Serialize())
 
@@ -49,4 +49,5 @@ func (db TextDB) AddUser(user user.User) {
 	if _, err := dbFile.Write(serialzedUser); err != nil {
 		errors.CriticalHandling(err)
 	}
+	return nil
 }
