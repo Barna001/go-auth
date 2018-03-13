@@ -9,6 +9,7 @@ import (
 
 	"github.com/Barna001/go-auth/database"
 	"github.com/Barna001/go-auth/errors"
+	"github.com/Barna001/go-auth/user"
 )
 
 // Server with port
@@ -29,7 +30,7 @@ func (server Server) handleUser(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		handleGet(w, r, server.Db)
 	case http.MethodPost:
-		fmt.Fprintf(w, "post them")
+		handlePost(w, r, server.Db)
 	default:
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
@@ -55,5 +56,22 @@ func handleGet(w http.ResponseWriter, r *http.Request, db database.Database) {
 	}
 	userJSON, _ := json.Marshal(user)
 	fmt.Fprintf(w, string(userJSON))
-	return
+}
+
+func handlePost(w http.ResponseWriter, r *http.Request, db database.Database) {
+	decoder := json.NewDecoder(r.Body)
+	var user user.User
+	if err := decoder.Decode(&user); err != nil {
+		http.Error(w, "Not valid user: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	if err := db.AddUser(user); err != nil {
+		http.Error(w, "Can not add user: "+err.Error(), http.StatusNotAcceptable)
+		return
+	}
+
+	userJSON, _ := json.Marshal(user)
+	fmt.Fprintf(w, string(userJSON), http.StatusCreated)
 }
