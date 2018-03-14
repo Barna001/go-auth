@@ -3,20 +3,21 @@ package main
 import (
 	"fmt"
 
+	"github.com/Barna001/go-auth/config"
 	"github.com/Barna001/go-auth/database"
+	"github.com/Barna001/go-auth/errors"
 	"github.com/Barna001/go-auth/http"
-	"github.com/Barna001/go-auth/user"
+	"github.com/kelseyhightower/envconfig"
 )
 
 func main() {
 	fmt.Println("hello there general kenobi")
-	db := database.TextDB{Location: "users.txt"}
-	db.AddUser(user.User{Email: "b@b.b", Name: "Barna", Password: "kek"})
-	user, err := db.GetUser("b@b.b")
-	if err != nil {
-		fmt.Println(err)
+	config.LoadEnv()
+	var authConfig config.AuthConfig
+	if err := envconfig.Process("authapp", &authConfig); err != nil {
+		errors.CriticalHandling(err)
 	}
-	fmt.Println(user)
-	webServer := http.Server{Port: 8080, Db: db}
+	db := database.TextDB{Location: authConfig.TextDBLocation}
+	webServer := http.Server{Port: authConfig.WebserverPort, Db: db}
 	webServer.StartServer()
 }
