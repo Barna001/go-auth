@@ -1,20 +1,23 @@
 package http
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/Barna001/go-auth/errors"
 	"github.com/dgrijalva/jwt-go"
 )
 
 type UserClaims struct {
-	Email   string `json:"email"`
-	Methods string `json:"methods"`
+	Email           string `json:"email"`
+	EndpointMethods string `json:"methods"`
 	jwt.StandardClaims
 }
 
-func CreateTokenForUsersEndpoint(signingKey string, email string) string {
+func createTokenForEndpoints(signingKey string, email string) string {
 	claims := UserClaims{
 		email,
-		"GET, POST",
+		"user/GET, user/POST",
 		jwt.StandardClaims{
 			ExpiresAt: 10000,
 		},
@@ -25,7 +28,10 @@ func CreateTokenForUsersEndpoint(signingKey string, email string) string {
 	return signedToken
 }
 
-func GetClaimsFromToken(tokenString string, signingKey string) (string, error) {
+func getClaimsFromToken(tokenString string, signingKey string) (string, error) {
+	if tokenString == "" {
+		return "", errors.UnparsableTokenError{Message: "No JWT token"}
+	}
 	token, err := jwt.ParseWithClaims(tokenString, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(signingKey), nil
 	})
@@ -40,7 +46,7 @@ func GetClaimsFromToken(tokenString string, signingKey string) (string, error) {
 
 func getClaimsFromValidToken(token *jwt.Token) (string, error) {
 	if claims, ok := token.Claims.(*UserClaims); ok {
-		return claims.Methods, nil
+		return claims.EndpointMethods, nil
 	} else {
 		return "", errors.WrongTypeOfClaimsTokenError{Message: "Methods string and StandardClaims needed"}
 	}
@@ -55,4 +61,8 @@ func getValidationErrors(ve *jwt.ValidationError) (string, error) {
 		return "", errors.NotActivatedOrExpiredTokenError{Message: ve.Error()}
 	}
 	return "", errors.UnparsableTokenError{}
+}
+
+func getJwtTokenFromHeader(header http.Header) string {
+	return strings.Replace(header.Get("Authentication"), "Bearer ", "", 1)
 }

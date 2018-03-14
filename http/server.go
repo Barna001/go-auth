@@ -14,8 +14,9 @@ import (
 
 // Server with port
 type Server struct {
-	Port int
-	Db   database.Database
+	Port       int
+	Db         database.Database
+	JwtSignKey string
 }
 
 // StartServer creates a DefaultServeMux server with the given port
@@ -28,6 +29,13 @@ func (server Server) StartServer() {
 func (server Server) handleUser(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
+		fmt.Println("get")
+		claims, err := getClaimsFromToken(getJwtTokenFromHeader(r.Header), server.JwtSignKey)
+		fmt.Println(claims)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
 		handleGet(w, r, server.Db)
 	case http.MethodPost:
 		handlePost(w, r, server.Db)

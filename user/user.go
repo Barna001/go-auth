@@ -6,9 +6,9 @@ import (
 
 // User has email, name and password
 type User struct {
-	Email    string `json:""`
-	Password string
-	Name     string
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Name     string `json:"name"`
 }
 
 // Deserialize the Users from plain string
