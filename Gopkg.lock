@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/dgrijalva/jwt-go"
+  packages = ["."]
+  revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
+  version = "v3.2.0"
+
+[[projects]]
   name = "github.com/joho/godotenv"
   packages = ["."]
   revision = "a79fa1e548e2c689c241d10173efd51e5d689d5b"
@@ -16,6 +22,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "90dbc7329b438f28649218d2b3aa6974a94e0324df7e39ace9ac41ef1dd46256"
+  inputs-digest = "d3e31dc36a33515585f4d284b981fce70572b9d0189144567d227ddd07e1a5ac"
   solver-name = "gps-cdcl"
   solver-version = 1

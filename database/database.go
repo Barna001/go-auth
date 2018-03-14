@@ -46,8 +46,8 @@ func (db TextDB) AddUser(user user.User) error {
 	errors.CriticalHandling(err)
 	defer dbFile.Close()
 
-	if _, err := dbFile.Write(serialzedUser); err != nil {
-		errors.CriticalHandling(err)
-	}
+	_, err = dbFile.Write(serialzedUser)
+	errors.CriticalHandling(err)
+
 	return nil
 }

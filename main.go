@@ -14,9 +14,8 @@ func main() {
 	fmt.Println("hello there general kenobi")
 	config.LoadEnv()
 	var authConfig config.AuthConfig
-	if err := envconfig.Process("authapp", &authConfig); err != nil {
-		errors.CriticalHandling(err)
-	}
+	err := envconfig.Process("authapp", &authConfig)
+	errors.CriticalHandling(err)
 	db := database.TextDB{Location: authConfig.TextDBLocation}
 	webServer := http.Server{Port: authConfig.WebserverPort, Db: db}
 	webServer.StartServer()

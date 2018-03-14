@@ -8,10 +8,10 @@ import (
 type AuthConfig struct {
 	TextDBLocation string `default:"users.txt"`
 	WebserverPort  int    `default:"8080"`
+	JWTSignKey     string `required:"true"`
 }
 
 func LoadEnv() {
-	if err := godotenv.Load(); err != nil {
-		errors.CriticalHandling(err)
-	}
+	err := godotenv.Load()
+	errors.CriticalHandling(err)
 }
