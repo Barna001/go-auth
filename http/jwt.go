@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Barna001/go-auth/errors"
 	"github.com/dgrijalva/jwt-go"
@@ -19,7 +20,7 @@ func createTokenForEndpoints(signingKey string, email string) string {
 		email,
 		"user/GET, user/POST",
 		jwt.StandardClaims{
-			ExpiresAt: 10000,
+			ExpiresAt: time.Now().Unix() + 60,
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

@@ -21,22 +21,41 @@ type Server struct {
 
 // StartServer creates a DefaultServeMux server with the given port
 func (server Server) StartServer() {
+	http.HandleFunc("/login", server.handleLogin)
 	http.HandleFunc("/user", server.handleUser)
 
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(server.Port), nil))
 }
 
+func (server Server) handleLogin(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		user := handleGetUser(w, r, server.Db)
+		if user.Email == r.Header.Get("emal") && user.Password == r.Header.Get("password") {
+			token := createTokenForEndpoints(server.JwtSignKey, user.Email)
+			fmt.Fprintf(w, token)
+		} else {
+			http.Error(w, "Invalid email or password", http.StatusForbidden)
+		}
+	default:
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
+}
+
 func (server Server) handleUser(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		fmt.Println("get")
 		claims, err := getClaimsFromToken(getJwtTokenFromHeader(r.Header), server.JwtSignKey)
 		fmt.Println(claims)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusForbidden)
 			return
 		}
-		handleGet(w, r, server.Db)
+		user := handleGetUser(w, r, server.Db)
+		if user.Email != "" {
+			userJSON, _ := json.Marshal(user)
+			fmt.Fprintf(w, string(userJSON))
+		}
 	case http.MethodPost:
 		handlePost(w, r, server.Db)
 	default:
@@ -44,26 +63,23 @@ func (server Server) handleUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleGet(w http.ResponseWriter, r *http.Request, db database.Database) {
-	email := r.URL.Query()["email"]
-	if len(email) == 0 {
+func handleGetUser(w http.ResponseWriter, r *http.Request, db database.Database) user.User {
+	emails := r.URL.Query()["email"]
+	if len(emails) == 0 {
 		http.Error(w, "You have to give an email address", http.StatusBadRequest)
-		return
+		return user.User{}
 	}
 
-	user, err := db.GetUser(email[0])
+	user, err := db.GetUser(emails[0])
 	if err != nil {
 		switch err.(type) {
 		case errors.NoUserError:
 			http.Error(w, "No user with this email", http.StatusNotFound)
-			return
 		default:
 			http.Error(w, "Can not read from DB", http.StatusInternalServerError)
-			return
 		}
 	}
-	userJSON, _ := json.Marshal(user)
-	fmt.Fprintf(w, string(userJSON))
+	return user
 }
 
 func handlePost(w http.ResponseWriter, r *http.Request, db database.Database) {
