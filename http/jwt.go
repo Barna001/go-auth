@@ -24,7 +24,7 @@ func createTokenForEndpoints(signingKey string, email string) string {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString(signingKey)
+	signedToken, err := token.SignedString([]byte(signingKey))
 	errors.CriticalHandling(err)
 	return signedToken
 }

@@ -31,7 +31,7 @@ func (server Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		user := handleGetUser(w, r, server.Db)
-		if user.Email == r.Header.Get("emal") && user.Password == r.Header.Get("password") {
+		if user.Password != "" && user.Password == r.Header.Get("password") {
 			token := createTokenForEndpoints(server.JwtSignKey, user.Email)
 			fmt.Fprintf(w, token)
 		} else {
