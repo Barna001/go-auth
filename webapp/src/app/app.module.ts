@@ -1,18 +1,44 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { NgModule, ErrorHandler } from '@angular/core';
+import { RouterModule, Routes, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { routes } from './app.routes';
 
 
 import { AppComponent } from './app.component';
+import { UserListComponent } from './user-list/user-list.component';
+import { RequestOptions, Http, HttpModule } from '@angular/http';
+import { AuthRequestOptions } from './service/authentication/auth-request';
+import { AuthErrorHandler } from './service/authentication/auth-error-handler';
+import { LoginComponent } from './login/login.component';
+import { AuthService } from './service/authentication/auth.service';
+import { AuthGuard } from './service/authentication/auth.guard';
 
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    UserListComponent,
+    LoginComponent
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    FormsModule,
+    HttpModule,
+    RouterModule.forRoot(routes),
   ],
-  providers: [],
+  providers: [
+    AuthGuard,
+    AuthService,
+    {
+      provide: RequestOptions,
+      useClass: AuthRequestOptions
+    },
+    {
+      provide: ErrorHandler,
+      useClass: AuthErrorHandler
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
