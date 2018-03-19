@@ -28,10 +28,16 @@ func (server Server) StartServer() {
 }
 
 func (server Server) handleLogin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	switch r.Method {
 	case http.MethodPost:
-		user := handleGetUser(w, r, server.Db)
-		if user.Password != "" && user.Password == r.Header.Get("password") {
+		user, err := getUserFromBody(w, r)
+		if err != nil {
+			return
+		}
+
+		dbUser := handleGetUser(w, user.Email, server.Db)
+		if user.Password == dbUser.Password {
 			token := createTokenForEndpoints(server.JwtSignKey, user.Email)
 			fmt.Fprintf(w, token)
 		} else {
@@ -43,6 +49,7 @@ func (server Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server Server) handleUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	switch r.Method {
 	case http.MethodGet:
 		claims, err := getClaimsFromToken(getJwtTokenFromHeader(r.Header), server.JwtSignKey)
@@ -51,7 +58,11 @@ func (server Server) handleUser(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusForbidden)
 			return
 		}
-		user := handleGetUser(w, r, server.Db)
+		emails := r.URL.Query()["email"]
+		if len(emails) == 0 {
+			http.Error(w, "You have to give an email address", http.StatusBadRequest)
+		}
+		user := handleGetUser(w, emails[0], server.Db)
 		if user.Email != "" {
 			userJSON, _ := json.Marshal(user)
 			fmt.Fprintf(w, string(userJSON))
@@ -63,14 +74,8 @@ func (server Server) handleUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleGetUser(w http.ResponseWriter, r *http.Request, db database.Database) user.User {
-	emails := r.URL.Query()["email"]
-	if len(emails) == 0 {
-		http.Error(w, "You have to give an email address", http.StatusBadRequest)
-		return user.User{}
-	}
-
-	user, err := db.GetUser(emails[0])
+func handleGetUser(w http.ResponseWriter, email string, db database.Database) user.User {
+	user, err := db.GetUser(email)
 	if err != nil {
 		switch err.(type) {
 		case errors.NoUserError:
@@ -83,13 +88,10 @@ func handleGetUser(w http.ResponseWriter, r *http.Request, db database.Database)
 }
 
 func handlePost(w http.ResponseWriter, r *http.Request, db database.Database) {
-	decoder := json.NewDecoder(r.Body)
-	var user user.User
-	if err := decoder.Decode(&user); err != nil {
-		http.Error(w, "Not valid user: "+err.Error(), http.StatusBadRequest)
+	user, err := getUserFromBody(w, r)
+	if err != nil {
 		return
 	}
-	defer r.Body.Close()
 
 	if err := db.AddUser(user); err != nil {
 		http.Error(w, "Can not add user: "+err.Error(), http.StatusNotAcceptable)
@@ -98,4 +100,16 @@ func handlePost(w http.ResponseWriter, r *http.Request, db database.Database) {
 
 	userJSON, _ := json.Marshal(user)
 	fmt.Fprintf(w, string(userJSON), http.StatusCreated)
+}
+
+func getUserFromBody(w http.ResponseWriter, r *http.Request) (user.User, error) {
+	decoder := json.NewDecoder(r.Body)
+	var parsedUser user.User
+	if err := decoder.Decode(&parsedUser); err != nil {
+		http.Error(w, "Not valid user: "+err.Error(), http.StatusBadRequest)
+		return user.User{}, err
+	}
+	defer r.Body.Close()
+
+	return parsedUser, nil
 }
