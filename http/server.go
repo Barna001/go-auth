@@ -10,6 +10,8 @@ import (
 	"github.com/Barna001/go-auth/database"
 	"github.com/Barna001/go-auth/errors"
 	"github.com/Barna001/go-auth/user"
+
+	"github.com/rs/cors"
 )
 
 // Server with port
@@ -21,14 +23,21 @@ type Server struct {
 
 // StartServer creates a DefaultServeMux server with the given port
 func (server Server) StartServer() {
-	http.HandleFunc("/login", server.handleLogin)
-	http.HandleFunc("/user", server.handleUser)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/login", server.handleLogin)
+	mux.HandleFunc("/user", server.handleUser)
 
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(server.Port), nil))
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:4200"},
+		AllowedMethods: []string{"GET", "POST"},
+		AllowedHeaders: []string{"*"},
+	})
+	handlers := c.Handler(mux)
+
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(server.Port), handlers))
 }
 
 func (server Server) handleLogin(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	switch r.Method {
 	case http.MethodPost:
 		user, err := getUserFromBody(w, r)
@@ -49,7 +58,6 @@ func (server Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server Server) handleUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	switch r.Method {
 	case http.MethodGet:
 		claims, err := getClaimsFromToken(getJwtTokenFromHeader(r.Header), server.JwtSignKey)

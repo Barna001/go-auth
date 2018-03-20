@@ -15,6 +15,8 @@ export class LoginComponent {
     this.authService.login({
       email: form.value.email,
       password: form.value.password,
+    }).then((jwtToken: string) => {
+      this.authService.setToken(jwtToken);
     });
   }
 

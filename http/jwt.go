@@ -20,7 +20,7 @@ func createTokenForEndpoints(signingKey string, email string) string {
 		email,
 		"user/GET, user/POST",
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Unix() + 60,
+			ExpiresAt: time.Now().Unix() + 60, // 60 sec exp
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
