@@ -3,3 +3,12 @@
   flex-direction: column;
   align-items: center;
 }
+
+.spaced-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.wide-500 {
+  width: 500px;
+}

@@ -13,13 +13,14 @@ import { AuthErrorHandler } from './service/authentication/auth-error-handler';
 import { LoginComponent } from './login/login.component';
 import { AuthService } from './service/authentication/auth.service';
 import { AuthGuard } from './service/authentication/auth.guard';
-
+import { UserDetailComponent } from './user-detail/user-detail.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     UserListComponent,
-    LoginComponent
+    LoginComponent,
+    UserDetailComponent
   ],
   imports: [
     BrowserModule,

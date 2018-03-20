@@ -10,6 +10,7 @@ import (
 
 // Database includes getting a user by email and adding a new user
 type Database interface {
+	GetUsers() ([]user.User, error)
 	GetUser(string) (user.User, error)
 	AddUser(user.User) error
 }
@@ -17,6 +18,16 @@ type Database interface {
 // TextDB is one implementation of Database, stores in plain text, in the given path
 type TextDB struct {
 	Location string
+}
+
+// GetUsers returns all users
+func (db TextDB) GetUsers() ([]user.User, error) {
+	prewUsersBytes, err := ioutil.ReadFile(db.Location)
+	if err != nil {
+		return []user.User{}, err
+	}
+	users := user.Deserialize(string(prewUsersBytes))
+	return users, nil
 }
 
 // GetUser returns the user with the given email

@@ -2,13 +2,12 @@
 import { Injectable } from '@angular/core';
 import { Http, Response, Headers } from '@angular/http';
 import * as jwt_decode from 'jwt-decode';
+import { environment } from '../../../environments/environment';
 
 export const TOKEN_NAME = 'jwt_token';
 
 @Injectable()
 export class AuthService {
-
-  private url = 'http://localhost:8080';
 
   constructor(private http: Http) { }
 
@@ -49,9 +48,13 @@ export class AuthService {
 
   login(user): Promise<string> {
     return this.http
-      .post(`${this.url}/login`, JSON.stringify(user))
+      .post(`${environment.apiUrl}/login`, JSON.stringify(user))
       .toPromise()
       .then(res => res.text());
+  }
+
+  logout() {
+    localStorage.removeItem(TOKEN_NAME);
   }
 
 }

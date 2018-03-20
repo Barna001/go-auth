@@ -3,11 +3,14 @@
   <h1>
     Welcome to Barna's beautiful app! Log in please.
   </h1>
-  <div>
-    <nav>
-      <a routerLink="/login" routerLinkActive="active">Login</a>
-      <a routerLink="/dashboard">Dashboard</a>
-    </nav>
+  <div class="wide-500">
+    <div class="spaced-row">
+      <nav>
+        <a routerLink="/login" routerLinkActive="active">Login</a>
+        <a routerLink="/dashboard">Dashboard</a>
+      </nav>
+      <button class="btn-info" (click)="logout()">Logout</button>
+    </div>
     <router-outlet></router-outlet>
   </div>
 </div>

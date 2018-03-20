@@ -45,7 +45,7 @@ func (server Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dbUser := handleGetUser(w, user.Email, server.Db)
+		dbUser := handleGetUserFromDB(w, user.Email, server.Db)
 		if user.Password == dbUser.Password {
 			token := createTokenForEndpoints(server.JwtSignKey, user.Email)
 			fmt.Fprintf(w, token)
@@ -60,29 +60,39 @@ func (server Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 func (server Server) handleUser(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		claims, err := getClaimsFromToken(getJwtTokenFromHeader(r.Header), server.JwtSignKey)
-		fmt.Println(claims)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusForbidden)
-			return
-		}
-		emails := r.URL.Query()["email"]
-		if len(emails) == 0 {
-			http.Error(w, "You have to give an email address", http.StatusBadRequest)
-		}
-		user := handleGetUser(w, emails[0], server.Db)
-		if user.Email != "" {
-			userJSON, _ := json.Marshal(user)
-			fmt.Fprintf(w, string(userJSON))
-		}
+		handleGetUser(w, r, server)
 	case http.MethodPost:
-		handlePost(w, r, server.Db)
+		handlePostUser(w, r, server.Db)
 	default:
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
 }
 
-func handleGetUser(w http.ResponseWriter, email string, db database.Database) user.User {
+func handleGetUser(w http.ResponseWriter, r *http.Request, server Server) {
+	claims, err := getClaimsFromToken(getJwtTokenFromHeader(r.Header), server.JwtSignKey)
+	fmt.Println("claims", claims)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+	emails := r.URL.Query()["email"]
+	if len(emails) == 0 {
+		users, err := server.Db.GetUsers()
+		if err != nil {
+			http.Error(w, "Can not read from DB", http.StatusInternalServerError)
+		}
+		usersJSON, _ := json.Marshal(users)
+		fmt.Fprintf(w, string(usersJSON))
+		return
+	}
+	user := handleGetUserFromDB(w, emails[0], server.Db)
+	if user.Email != "" {
+		userJSON, _ := json.Marshal(user)
+		fmt.Fprintf(w, string(userJSON))
+	}
+}
+
+func handleGetUserFromDB(w http.ResponseWriter, email string, db database.Database) user.User {
 	user, err := db.GetUser(email)
 	if err != nil {
 		switch err.(type) {
@@ -95,7 +105,7 @@ func handleGetUser(w http.ResponseWriter, email string, db database.Database) us
 	return user
 }
 
-func handlePost(w http.ResponseWriter, r *http.Request, db database.Database) {
+func handlePostUser(w http.ResponseWriter, r *http.Request, db database.Database) {
 	user, err := getUserFromBody(w, r)
 	if err != nil {
 		return
