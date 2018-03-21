@@ -19,6 +19,8 @@ type Server struct {
 	Port       int
 	Db         database.Database
 	JwtSignKey string
+	CertFile   string
+	KeyFile    string
 }
 
 // StartServer creates a DefaultServeMux server with the given port
@@ -28,13 +30,14 @@ func (server Server) StartServer() {
 	mux.HandleFunc("/user", server.handleUser)
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:4200"},
+		AllowedOrigins: []string{"https://localhost:4200"},
 		AllowedMethods: []string{"GET", "POST"},
 		AllowedHeaders: []string{"*"},
 	})
 	handlers := c.Handler(mux)
 
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(server.Port), handlers))
+	log.Printf("About to listen on " + strconv.Itoa(server.Port) + ". Go to https://localhost:" + strconv.Itoa(server.Port))
+	log.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(server.Port), server.CertFile, server.KeyFile, handlers))
 }
 
 func (server Server) handleLogin(w http.ResponseWriter, r *http.Request) {

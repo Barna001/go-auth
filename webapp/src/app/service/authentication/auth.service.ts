@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Http, Response, Headers } from '@angular/http';
 import * as jwt_decode from 'jwt-decode';
 import { environment } from '../../../environments/environment';
+import { User } from '../../models/user.model';
 
 export const TOKEN_NAME = 'jwt_token';
 
@@ -46,7 +47,7 @@ export class AuthService {
     return !(date.valueOf() > new Date().valueOf());
   }
 
-  login(user): Promise<string> {
+  login(user: User): Promise<string> {
     return this.http
       .post(`${environment.apiUrl}/login`, JSON.stringify(user))
       .toPromise()

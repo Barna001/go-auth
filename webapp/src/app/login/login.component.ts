@@ -16,6 +16,7 @@ export class LoginComponent {
     this.authService.login({
       email: form.value.email,
       password: form.value.password,
+      name: '',
     }).then((jwtToken: string) => {
       this.authService.setToken(jwtToken);
       this.router.navigate(['/dashboard']);

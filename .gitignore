@@ -2,3 +2,5 @@
 vendor
 users.txt
 git
+server.crt
+server.key

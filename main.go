@@ -17,6 +17,6 @@ func main() {
 	err := envconfig.Process("authapp", &authConfig)
 	errors.CriticalHandling(err)
 	db := database.TextDB{Location: authConfig.TextDBLocation}
-	webServer := http.Server{Port: authConfig.WebserverPort, Db: db, JwtSignKey: authConfig.JWTSignKey}
+	webServer := http.Server{Port: authConfig.WebserverPort, Db: db, JwtSignKey: authConfig.JWTSignKey, CertFile: authConfig.CERT_FILE, KeyFile: authConfig.KEY_FILE}
 	webServer.StartServer()
 }

@@ -9,6 +9,8 @@ type AuthConfig struct {
 	TextDBLocation string `default:"users.txt"`
 	WebserverPort  int    `default:"8080"`
 	JWTSignKey     string `required:"true"`
+	CERT_FILE      string `required:"true"`
+	KEY_FILE       string `required:"true"`
 }
 
 func LoadEnv() {
