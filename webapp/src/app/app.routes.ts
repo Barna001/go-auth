@@ -4,6 +4,7 @@ import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
 import { UserListComponent } from './user-list/user-list.component';
 import { UserDetailComponent } from './user-detail/user-detail.component';
+import { RegisterComponent } from './register/register.component';
 
 export const routes: Routes = [
   {
@@ -21,6 +22,10 @@ export const routes: Routes = [
     path: 'user/:email',
     component: UserDetailComponent,
     canActivate: [AuthGuard]
+  },
+  {
+    path: 'register',
+    component: RegisterComponent
   },
   {
     path: 'login',

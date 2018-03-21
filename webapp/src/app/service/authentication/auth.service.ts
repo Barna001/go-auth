@@ -58,4 +58,11 @@ export class AuthService {
     localStorage.removeItem(TOKEN_NAME);
   }
 
+  register(user: User): Promise<string> {
+    return this.http
+      .post(`${environment.apiUrl}/user`, JSON.stringify(user))
+      .toPromise()
+      .then(res => res.text());
+  }
+
 }

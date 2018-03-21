@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, ErrorHandler } from '@angular/core';
 import { RouterModule, Routes, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { routes } from './app.routes';
 
 
@@ -14,17 +14,20 @@ import { LoginComponent } from './login/login.component';
 import { AuthService } from './service/authentication/auth.service';
 import { AuthGuard } from './service/authentication/auth.guard';
 import { UserDetailComponent } from './user-detail/user-detail.component';
+import { RegisterComponent } from './register/register.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     UserListComponent,
     LoginComponent,
-    UserDetailComponent
+    UserDetailComponent,
+    RegisterComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
+    ReactiveFormsModule,
     HttpModule,
     RouterModule.forRoot(routes),
   ],

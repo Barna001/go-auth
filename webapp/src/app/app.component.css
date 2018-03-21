@@ -12,3 +12,7 @@
 .wide-500 {
   width: 500px;
 }
+
+.active {
+  text-decoration: underline;
+}

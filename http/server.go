@@ -11,7 +11,9 @@ import (
 	"github.com/Barna001/go-auth/errors"
 	"github.com/Barna001/go-auth/user"
 
+	ct "github.com/daviddengcn/go-colortext"
 	"github.com/rs/cors"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Server with port
@@ -36,7 +38,9 @@ func (server Server) StartServer() {
 	})
 	handlers := c.Handler(mux)
 
+	ct.Foreground(ct.Green, false)
 	log.Printf("About to listen on " + strconv.Itoa(server.Port) + ". Go to https://localhost:" + strconv.Itoa(server.Port))
+	ct.ResetColor()
 	log.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(server.Port), server.CertFile, server.KeyFile, handlers))
 }
 
@@ -49,11 +53,11 @@ func (server Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		dbUser := handleGetUserFromDB(w, user.Email, server.Db)
-		if user.Password == dbUser.Password {
+		if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password)); err != nil {
+			http.Error(w, "Invalid email or password", http.StatusForbidden)
+		} else {
 			token := createTokenForEndpoints(server.JwtSignKey, user.Email)
 			fmt.Fprintf(w, token)
-		} else {
-			http.Error(w, "Invalid email or password", http.StatusForbidden)
 		}
 	default:
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
@@ -113,6 +117,12 @@ func handlePostUser(w http.ResponseWriter, r *http.Request, db database.Database
 	if err != nil {
 		return
 	}
+
+	passHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
+	if err != nil {
+		http.Error(w, "Can not hash password", http.StatusInternalServerError)
+	}
+	user.Password = string(passHash)
 
 	if err := db.AddUser(user); err != nil {
 		http.Error(w, "Can not add user: "+err.Error(), http.StatusNotAcceptable)

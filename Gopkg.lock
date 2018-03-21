@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/daviddengcn/go-colortext"
+  packages = ["."]
+  revision = "17e75f6184bc9e727756cd0d82e0af58b1fc7191"
+  version = "1.0.0"
+
+[[projects]]
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
   revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
@@ -25,9 +31,18 @@
   revision = "feef513b9575b32f84bafa580aad89b011259019"
   version = "v1.3.0"
 
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = [
+    "bcrypt",
+    "blowfish"
+  ]
+  revision = "80db560fac1fb3e6ac81dbc7f8ae4c061f5257bd"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d3b1049a8fc0712d0563631dacfb72a841e17c05edd6dfc2bd164c23a4d6d154"
+  inputs-digest = "6cf001eecc19c722d588fb6878bf4a3f0b3b1395b4d6e726e829c825de1be884"
   solver-name = "gps-cdcl"
   solver-version = 1
