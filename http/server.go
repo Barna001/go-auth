@@ -56,7 +56,13 @@ func (server Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password)); err != nil {
 			http.Error(w, "Invalid email or password", http.StatusForbidden)
 		} else {
-			token := createTokenForEndpoints(server.JwtSignKey, user.Email)
+			var endpoints []string
+			if user.Email == "b@b.b" {
+				endpoints = []string{GetAllUser.String(), GetOneUser.String()}
+			} else {
+				endpoints = []string{GetAllUser.String()}
+			}
+			token := createTokenForEndpoints(server.JwtSignKey, user.Email, endpoints)
 			fmt.Fprintf(w, token)
 		}
 	default:
@@ -77,26 +83,43 @@ func (server Server) handleUser(w http.ResponseWriter, r *http.Request) {
 
 func handleGetUser(w http.ResponseWriter, r *http.Request, server Server) {
 	claims, err := getClaimsFromToken(getJwtTokenFromHeader(r.Header), server.JwtSignKey)
-	fmt.Println("claims", claims)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
 	}
 	emails := r.URL.Query()["email"]
 	if len(emails) == 0 {
+		if !contains(claims, GetAllUser.String()) {
+			http.Error(w, "No permission to get users", http.StatusUnauthorized)
+			return
+		}
+
 		users, err := server.Db.GetUsers()
 		if err != nil {
 			http.Error(w, "Can not read from DB", http.StatusInternalServerError)
 		}
 		usersJSON, _ := json.Marshal(users)
 		fmt.Fprintf(w, string(usersJSON))
-		return
+	} else {
+		if !contains(claims, GetOneUser.String()) {
+			http.Error(w, "no permission to get user detail", http.StatusUnauthorized)
+			return
+		}
+		user := handleGetUserFromDB(w, emails[0], server.Db)
+		if user.Email != "" {
+			userJSON, _ := json.Marshal(user)
+			fmt.Fprintf(w, string(userJSON))
+		}
 	}
-	user := handleGetUserFromDB(w, emails[0], server.Db)
-	if user.Email != "" {
-		userJSON, _ := json.Marshal(user)
-		fmt.Fprintf(w, string(userJSON))
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
 	}
+	return false
 }
 
 func handleGetUserFromDB(w http.ResponseWriter, email string, db database.Database) user.User {

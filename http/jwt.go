@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -16,10 +15,10 @@ type UserClaims struct {
 	jwt.StandardClaims
 }
 
-func createTokenForEndpoints(signingKey string, email string) string {
+func createTokenForEndpoints(signingKey string, email string, endpoints []string) string {
 	claims := UserClaims{
 		email,
-		[]string{"user/GET", "user/POST"},
+		endpoints,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Unix() + 180, // 180 sec exp
 			Issuer:    "test",
@@ -28,12 +27,10 @@ func createTokenForEndpoints(signingKey string, email string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString([]byte(signingKey))
 	errors.CriticalHandling(err)
-	fmt.Println("signedToken", signedToken)
 	return signedToken
 }
 
 func getClaimsFromToken(tokenString string, signingKey string) ([]string, error) {
-	fmt.Println("recievedToken", tokenString)
 	if tokenString == "" {
 		return []string{}, errors.UnparsableTokenError{Message: "No JWT token"}
 	}
@@ -42,10 +39,8 @@ func getClaimsFromToken(tokenString string, signingKey string) ([]string, error)
 	})
 
 	if token.Valid {
-		fmt.Println("valid token")
 		return getClaimsFromValidToken(token)
 	} else if ve, ok := err.(*jwt.ValidationError); ok {
-		fmt.Println("invalid otken")
 		return getValidationErrors(ve)
 	}
 	return []string{}, errors.UnparsableTokenError{}

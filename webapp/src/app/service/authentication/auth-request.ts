@@ -12,7 +12,15 @@ export class AuthRequestOptions extends BaseRequestOptions {
 
     const token = localStorage.getItem(TOKEN_NAME);
     if (token) {
-      this.headers.append(AUTH_HEADER_KEY, `${AUTH_PREFIX} ${token}`);
+      this.headers.set(AUTH_HEADER_KEY, `${AUTH_PREFIX} ${token}`);
+    }
+  }
+
+  refreshToken() {
+    const token = localStorage.getItem(TOKEN_NAME);
+    if (token) {
+      this.headers.delete(AUTH_HEADER_KEY);
+      this.headers.set(AUTH_HEADER_KEY, `${AUTH_PREFIX} ${token}`);
     }
   }
 

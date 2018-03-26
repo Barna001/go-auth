@@ -2,5 +2,6 @@
 <ul>
   <li *ngFor="let user of users">
     Name: {{user.name}}, Email: {{user.email}}
+    <a [routerLink]="'/user/' + user.email">Details</a>
   </li>
 </ul>

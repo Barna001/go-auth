@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../service/authentication/auth.service';
 import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
+import { RequestOptions } from '@angular/http';
+import { AuthRequestOptions } from '../service/authentication/auth-request';
 
 @Component({
   selector: 'app-login',
@@ -10,7 +12,7 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent {
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router, private requestOptions: RequestOptions) {}
 
   onSubmit(form: NgForm) {
     this.authService.login({
@@ -19,6 +21,7 @@ export class LoginComponent {
       name: '',
     }).then((jwtToken: string) => {
       this.authService.setToken(jwtToken);
+      (this.requestOptions as AuthRequestOptions).refreshToken();
       this.router.navigate(['/dashboard']);
     });
   }
